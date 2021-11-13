@@ -2,11 +2,13 @@ package com.example.quizapp;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.content.res.ColorStateList;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.CountDownTimer;
+import android.os.Handler;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
@@ -76,6 +78,10 @@ public class QuestionActivity extends AppCompatActivity implements View.OnClickL
         data.add(new Question(2, "food and drink", "Which food has not cholestrol?", "pizza", "burger", "hot dog", "chicken", "chicken"));
         data.add(new Question(3, "athletic", "Where does ronaldo play?", "man city", "man unt", "real madrid", "juventos", "man unt"));
         data.add(new Question(4, "athletic", "Where does messi play?", "man city", "man unt", "real madrid", "psg", "psg"));
+        data.add(new Question(4, "athletic", "Where does messi play?", "man city", "man unt", "real madrid", "psg", "psg"));
+        data.add(new Question(4, "athletic", "Where does messi play?", "man city", "man unt", "real madrid", "psg", "psg"));
+        data.add(new Question(4, "athletic", "Where does messi play?", "man city", "man unt", "real madrid", "psg", "psg"));
+        data.add(new Question(4, "athletic", "Where does messi play?", "man city", "man unt", "real madrid", "psg", "psg"));
 
         for (Question question :
                 data) {
@@ -89,22 +95,22 @@ public class QuestionActivity extends AppCompatActivity implements View.OnClickL
 
     private void startTimer() {
         timer = new CountDownTimer(30000, 1000) {
+            @SuppressLint("NewApi")
             @Override
             public void onTick(long millisUntilFinished) {
                 long second = millisUntilFinished / 1000;
                 timerCountDown.setText(String.valueOf(second));
                 timerProgressBar.setProgress((int) second);
                 if (second <= 10) {
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                        timerProgressBar.setIndicatorColor(getColor(R.color.red_600));
-                    } else {
-                        timerProgressBar.setIndicatorColor(Integer.parseInt("#E53935"));
-                    }
+                    timerProgressBar.setIndicatorColor(getColor(R.color.red_600));
                 }
             }
 
+            @SuppressLint("NewApi")
             @Override
             public void onFinish() {
+                nextQuestion();
+                timerProgressBar.setIndicatorColor(getColor(R.color.grey_100));
                 Toast.makeText(getApplicationContext(), "Times Up!", Toast.LENGTH_SHORT).show();
             }
         }.start();
@@ -140,21 +146,37 @@ public class QuestionActivity extends AppCompatActivity implements View.OnClickL
         }
     }
 
+    @SuppressLint("NewApi")
     private void checkAnswer(Button selectedButton) {
         String selectedOption = selectedButton.getText().toString().toLowerCase(Locale.ROOT);
         Log.d("Btn", selectedOption);
         if (selectedOption.equals(currentQuestion.getAnswer().toLowerCase(Locale.ROOT))) {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                selectedButton.setBackgroundTintList(ColorStateList.valueOf(getColor(R.color.green_600)));
-            } else {
-                selectedButton.setBackgroundColor(Integer.parseInt("#43A047"));
-            }
+            selectedButton.setBackgroundTintList(ColorStateList.valueOf(getColor(R.color.green_600)));
+            nextQuestion();
         } else {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                selectedButton.setBackgroundTintList(ColorStateList.valueOf(getColor(R.color.red_600)));
-            } else {
-                selectedButton.setBackgroundColor(Integer.parseInt("#E53935"));
-            }
+            selectedButton.setBackgroundTintList(ColorStateList.valueOf(getColor(R.color.red_600)));
+            nextQuestion();
         }
+    }
+
+    private void nextQuestion() {
+        timer.cancel();
+        new Handler().postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                questionIndex++;
+                resetOptions();
+                setQuestions();
+                timer.start();
+            }
+        }, 2000);
+    }
+
+    @SuppressLint("NewApi")
+    private void resetOptions() {
+        optionOneBtn.setBackgroundTintList(ColorStateList.valueOf(getColor(R.color.grey_500)));
+        optionTwoBtn.setBackgroundTintList(ColorStateList.valueOf(getColor(R.color.grey_500)));
+        optionThreeBtn.setBackgroundTintList(ColorStateList.valueOf(getColor(R.color.grey_500)));
+        optionFourBtn.setBackgroundTintList(ColorStateList.valueOf(getColor(R.color.grey_500)));
     }
 }
