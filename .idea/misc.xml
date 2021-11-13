@@ -14,10 +14,12 @@
         <entry key="app/src/main/res/drawable/gradient_7.xml" value="0.35" />
         <entry key="app/src/main/res/drawable/gradient_bg.xml" value="0.35" />
         <entry key="app/src/main/res/drawable/ic_close.xml" value="0.35" />
+        <entry key="app/src/main/res/drawable/ic_heart.xml" value="0.35" />
         <entry key="app/src/main/res/drawable/ic_play.xml" value="0.35" />
         <entry key="app/src/main/res/drawable/ic_user.xml" value="0.35" />
         <entry key="app/src/main/res/drawable/option_bg.xml" value="0.35" />
         <entry key="app/src/main/res/drawable/option_correct_bg.xml" value="0.35" />
+        <entry key="app/src/main/res/drawable/option_style.xml" value="0.35" />
         <entry key="app/src/main/res/drawable/option_wrong_bg.xml" value="0.35" />
         <entry key="app/src/main/res/drawable/timer.xml" value="0.35" />
         <entry key="app/src/main/res/layout-v21/category_item.xml" value="0.3338541666666667" />
