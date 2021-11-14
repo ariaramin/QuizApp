@@ -11,6 +11,10 @@ import android.os.CountDownTimer;
 import android.os.Handler;
 import android.util.Log;
 import android.view.View;
+import android.view.animation.AlphaAnimation;
+import android.view.animation.Animation;
+import android.view.animation.LinearInterpolator;
+import android.view.animation.RotateAnimation;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
@@ -23,17 +27,19 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
-public class QuestionActivity extends AppCompatActivity implements View.OnClickListener {
+public class QuestionActivity extends AppCompatActivity implements View.OnClickListener, OnRestartListener {
 
     ImageView closeBtn;
     CircularProgressIndicator timerProgressBar;
-    TextView timerCountDown, questionTV, questionIndexTV;
+    TextView timerCountDown, questionTV, questionIndexTV, healthTV;
     Button optionOneBtn, optionTwoBtn, optionThreeBtn, optionFourBtn;
 
+    int health = 5;
     List<Question> questionList = new ArrayList<>();
     int questionIndex = 0;
     Question currentQuestion;
     CountDownTimer timer;
+    boolean wrongAnswerSelected;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -54,6 +60,8 @@ public class QuestionActivity extends AppCompatActivity implements View.OnClickL
         optionThreeBtn.setOnClickListener(this);
         optionFourBtn = findViewById(R.id.optionFourButton);
         optionFourBtn.setOnClickListener(this);
+        healthTV = findViewById(R.id.healthTextView);
+        healthTV.setText(String.valueOf(health));
 
         String category = getIntent().getStringExtra("category");
         getQuestions(category);
@@ -64,12 +72,43 @@ public class QuestionActivity extends AppCompatActivity implements View.OnClickL
     private void setQuestions() {
         currentQuestion = questionList.get(questionIndex);
         int index = questionList.indexOf(currentQuestion);
-        questionTV.setText(currentQuestion.getQuestion());
         questionIndexTV.setText(String.format("%o/%o", index + 1, questionList.size()));
-        optionOneBtn.setText(currentQuestion.getOptionOne());
-        optionTwoBtn.setText(currentQuestion.getOptionTwo());
-        optionThreeBtn.setText(currentQuestion.getOptionThree());
-        optionFourBtn.setText(currentQuestion.getOptionFour());
+
+        AlphaAnimation fadeOut = new AlphaAnimation(1f, 0f);
+        fadeOut.setDuration(200);
+        AlphaAnimation fadeIn = new AlphaAnimation(0f, 1f);
+        fadeIn.setDuration(200);
+
+        questionTV.startAnimation(fadeOut);
+        optionOneBtn.startAnimation(fadeOut);
+        optionTwoBtn.startAnimation(fadeOut);
+        optionThreeBtn.startAnimation(fadeOut);
+        optionFourBtn.startAnimation(fadeOut);
+        fadeOut.setAnimationListener(new Animation.AnimationListener() {
+            @Override
+            public void onAnimationStart(Animation animation) {
+
+            }
+
+            @Override
+            public void onAnimationEnd(Animation animation) {
+                questionTV.setText(currentQuestion.getQuestion());
+                questionTV.startAnimation(fadeIn);
+                optionOneBtn.setText(currentQuestion.getOptionOne());
+                optionOneBtn.startAnimation(fadeIn);
+                optionTwoBtn.setText(currentQuestion.getOptionTwo());
+                optionTwoBtn.startAnimation(fadeIn);
+                optionThreeBtn.setText(currentQuestion.getOptionThree());
+                optionThreeBtn.startAnimation(fadeIn);
+                optionFourBtn.setText(currentQuestion.getOptionFour());
+                optionFourBtn.startAnimation(fadeIn);
+            }
+
+            @Override
+            public void onAnimationRepeat(Animation animation) {
+
+            }
+        });
     }
 
     private void getQuestions(String category) {
@@ -89,8 +128,6 @@ public class QuestionActivity extends AppCompatActivity implements View.OnClickL
                 questionList.add(question);
             }
         }
-
-        Log.i("Que", questionList + "");
     }
 
     private void startTimer() {
@@ -103,15 +140,23 @@ public class QuestionActivity extends AppCompatActivity implements View.OnClickL
                 timerProgressBar.setProgress((int) second);
                 if (second <= 10) {
                     timerProgressBar.setIndicatorColor(getColor(R.color.red_600));
+                    shakingButtonAnimation(optionOneBtn, second);
+                    shakingButtonAnimation(optionTwoBtn, second);
+                    shakingButtonAnimation(optionThreeBtn, second);
+                    shakingButtonAnimation(optionFourBtn, second);
+                } else {
+                    timerProgressBar.setIndicatorColor(getColor(R.color.grey_100));
                 }
             }
 
             @SuppressLint("NewApi")
             @Override
             public void onFinish() {
-                nextQuestion();
+                timer.cancel();
+                wrongAnswerSelected = true;
                 timerProgressBar.setIndicatorColor(getColor(R.color.grey_100));
-                Toast.makeText(getApplicationContext(), "Times Up!", Toast.LENGTH_SHORT).show();
+                TimesUpDialog dialog = new TimesUpDialog();
+                dialog.show(getSupportFragmentManager(), null);
             }
         }.start();
     }
@@ -146,15 +191,22 @@ public class QuestionActivity extends AppCompatActivity implements View.OnClickL
         }
     }
 
+    private void decreaseHealth() {
+        health--;
+        healthTV.setText(String.valueOf(health));
+    }
+
     @SuppressLint("NewApi")
     private void checkAnswer(Button selectedButton) {
+        selectedButton.clearAnimation();
         String selectedOption = selectedButton.getText().toString().toLowerCase(Locale.ROOT);
-        Log.d("Btn", selectedOption);
         if (selectedOption.equals(currentQuestion.getAnswer().toLowerCase(Locale.ROOT))) {
             selectedButton.setBackgroundTintList(ColorStateList.valueOf(getColor(R.color.green_600)));
+            wrongAnswerSelected = false;
             nextQuestion();
         } else {
             selectedButton.setBackgroundTintList(ColorStateList.valueOf(getColor(R.color.red_600)));
+            wrongAnswerSelected = true;
             nextQuestion();
         }
     }
@@ -164,12 +216,14 @@ public class QuestionActivity extends AppCompatActivity implements View.OnClickL
         new Handler().postDelayed(new Runnable() {
             @Override
             public void run() {
+                if (wrongAnswerSelected)
+                    decreaseHealth();
                 questionIndex++;
                 resetOptions();
                 setQuestions();
                 timer.start();
             }
-        }, 2000);
+        }, 1000);
     }
 
     @SuppressLint("NewApi")
@@ -178,5 +232,31 @@ public class QuestionActivity extends AppCompatActivity implements View.OnClickL
         optionTwoBtn.setBackgroundTintList(ColorStateList.valueOf(getColor(R.color.grey_500)));
         optionThreeBtn.setBackgroundTintList(ColorStateList.valueOf(getColor(R.color.grey_500)));
         optionFourBtn.setBackgroundTintList(ColorStateList.valueOf(getColor(R.color.grey_500)));
+    }
+
+    private void shakingButtonAnimation(Button button, long second) {
+        Animation shaking = new RotateAnimation(-5,
+                5,
+                Animation.RELATIVE_TO_SELF,
+                0.5f,
+                Animation.RELATIVE_TO_SELF,
+                0.5f);
+        shaking.setDuration(100);
+        shaking.setRepeatCount(Animation.INFINITE);
+        shaking.setRepeatMode(Animation.REVERSE);
+        shaking.setInterpolator(new LinearInterpolator());
+        button.startAnimation(shaking);
+        if (second == 0) {
+            button.clearAnimation();
+        }
+    }
+
+    @Override
+    public void OnRestart(int health, int index) {
+        questionIndex = index;
+        this.health = health;
+        healthTV.setText(String.valueOf(this.health));
+        startTimer();
+        setQuestions();
     }
 }

@@ -26,6 +26,8 @@
         <entry key="app/src/main/res/layout/activity_main.xml" value="0.33" />
         <entry key="app/src/main/res/layout/activity_question.xml" value="0.3338541666666667" />
         <entry key="app/src/main/res/layout/category_item.xml" value="0.3338541666666667" />
+        <entry key="app/src/main/res/layout/game_over_dialog.xml" value="0.3338541666666667" />
+        <entry key="app/src/main/res/layout/times_up_dialog.xml" value="0.33" />
       </map>
     </option>
   </component>
