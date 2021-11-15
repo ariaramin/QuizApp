@@ -9,24 +9,24 @@
 
     <com.airbnb.lottie.LottieAnimationView
         android:id="@+id/lottieAnimationView"
-        android:layout_width="220dp"
-        android:layout_height="220dp"
+        android:layout_width="300dp"
+        android:layout_height="230dp"
         android:layout_gravity="center_horizontal|top"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         app:lottie_autoPlay="true"
-        app:lottie_loop="true"
-        app:lottie_rawRes="@raw/lf30_editor_vy5spujr" />
+        app:lottie_loop="true" />
 
     <Button
         android:id="@+id/exitButton"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_gravity="start|center_horizontal"
-        android:layout_marginTop="24dp"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="8dp"
         android:layout_marginEnd="16dp"
-        android:layout_marginBottom="8dp"
+        android:layout_marginBottom="16dp"
         android:background="@drawable/button_background"
         android:text="Exit"
         android:textAllCaps="false"
@@ -42,6 +42,7 @@
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_gravity="clip_vertical|end"
+        android:layout_marginEnd="8dp"
         android:background="@drawable/button_background"
         android:text="Restart"
         android:textAllCaps="false"

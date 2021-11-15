@@ -3,13 +3,10 @@ package com.example.quizapp;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.annotation.SuppressLint;
-import android.content.Intent;
 import android.content.res.ColorStateList;
-import android.os.Build;
 import android.os.Bundle;
 import android.os.CountDownTimer;
 import android.os.Handler;
-import android.util.Log;
 import android.view.View;
 import android.view.animation.AlphaAnimation;
 import android.view.animation.Animation;
@@ -17,9 +14,7 @@ import android.view.animation.LinearInterpolator;
 import android.view.animation.RotateAnimation;
 import android.widget.Button;
 import android.widget.ImageView;
-import android.widget.ProgressBar;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.google.android.material.progressindicator.CircularProgressIndicator;
 
@@ -34,12 +29,15 @@ public class QuestionActivity extends AppCompatActivity implements View.OnClickL
     TextView timerCountDown, questionTV, questionIndexTV, healthTV;
     Button optionOneBtn, optionTwoBtn, optionThreeBtn, optionFourBtn;
 
-    int health = 5;
+    int health = 3;
     List<Question> questionList = new ArrayList<>();
     int questionIndex = 0;
     Question currentQuestion;
     CountDownTimer timer;
     boolean wrongAnswerSelected;
+    private static final int TIME_OVER_ID = 1;
+    private static final int GAME_OVER_ID = 2;
+    private static final int VICTORY_ID = 3;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -67,6 +65,25 @@ public class QuestionActivity extends AppCompatActivity implements View.OnClickL
         getQuestions(category);
         setQuestions();
         startTimer();
+    }
+
+    private void getQuestions(String category) {
+        List<Question> data = new ArrayList<>();
+        data.add(new Question(1, "food and drink", "Which food has cholestrol?", "pizza", "burger", "hot dog", "chicken", "chicken"));
+        data.add(new Question(2, "food and drink", "Which food has not cholestrol?", "pizza", "burger", "hot dog", "chicken", "chicken"));
+        data.add(new Question(3, "athletic", "Where does ronaldo play?", "man city", "man unt", "real madrid", "juventos", "man unt"));
+        data.add(new Question(4, "athletic", "Where does messi play?", "man city", "man unt", "real madrid", "psg", "psg"));
+        data.add(new Question(4, "athletic", "Where does messi play?", "man city", "man unt", "real madrid", "psg", "psg"));
+        data.add(new Question(4, "athletic", "Where does messi play?", "man city", "man unt", "real madrid", "psg", "psg"));
+        data.add(new Question(4, "athletic", "Where does messi play?", "man city", "man unt", "real madrid", "psg", "psg"));
+        data.add(new Question(4, "athletic", "Where does messi play?", "man city", "man unt", "real madrid", "psg", "psg"));
+
+        for (Question question :
+                data) {
+            if (question.getCategory().toLowerCase(Locale.ROOT).equals(category.toLowerCase(Locale.ROOT))) {
+                questionList.add(question);
+            }
+        }
     }
 
     private void setQuestions() {
@@ -111,25 +128,6 @@ public class QuestionActivity extends AppCompatActivity implements View.OnClickL
         });
     }
 
-    private void getQuestions(String category) {
-        List<Question> data = new ArrayList<>();
-        data.add(new Question(1, "food and drink", "Which food has cholestrol?", "pizza", "burger", "hot dog", "chicken", "chicken"));
-        data.add(new Question(2, "food and drink", "Which food has not cholestrol?", "pizza", "burger", "hot dog", "chicken", "chicken"));
-        data.add(new Question(3, "athletic", "Where does ronaldo play?", "man city", "man unt", "real madrid", "juventos", "man unt"));
-        data.add(new Question(4, "athletic", "Where does messi play?", "man city", "man unt", "real madrid", "psg", "psg"));
-        data.add(new Question(4, "athletic", "Where does messi play?", "man city", "man unt", "real madrid", "psg", "psg"));
-        data.add(new Question(4, "athletic", "Where does messi play?", "man city", "man unt", "real madrid", "psg", "psg"));
-        data.add(new Question(4, "athletic", "Where does messi play?", "man city", "man unt", "real madrid", "psg", "psg"));
-        data.add(new Question(4, "athletic", "Where does messi play?", "man city", "man unt", "real madrid", "psg", "psg"));
-
-        for (Question question :
-                data) {
-            if (question.getCategory().toLowerCase(Locale.ROOT).equals(category.toLowerCase(Locale.ROOT))) {
-                questionList.add(question);
-            }
-        }
-    }
-
     private void startTimer() {
         timer = new CountDownTimer(30000, 1000) {
             @SuppressLint("NewApi")
@@ -152,28 +150,28 @@ public class QuestionActivity extends AppCompatActivity implements View.OnClickL
             @SuppressLint("NewApi")
             @Override
             public void onFinish() {
-                timer.cancel();
+                cancelTimer();
                 wrongAnswerSelected = true;
                 timerProgressBar.setIndicatorColor(getColor(R.color.grey_100));
-                TimesUpDialog dialog = new TimesUpDialog();
-                dialog.show(getSupportFragmentManager(), null);
+                showQuizDialog(TIME_OVER_ID);
             }
-        }.start();
+        };
+        timer.start();
     }
 
-    @Override
-    public void onBackPressed() {
-        if (timer != null)
-            timer.cancel();
-        super.onBackPressed();
+    public void showQuizDialog(int status) {
+        Bundle bundle = new Bundle();
+        bundle.putInt("status", status);
+        AppDialog dialog = new AppDialog();
+        dialog.setArguments(bundle);
+        dialog.show(getSupportFragmentManager(), null);
     }
 
     @Override
     public void onClick(View v) {
         switch (v.getId()) {
             case R.id.closeImageView:
-                if (timer != null)
-                    timer.cancel();
+                cancelTimer();
                 finish();
                 break;
             case R.id.optionOneButton:
@@ -194,6 +192,15 @@ public class QuestionActivity extends AppCompatActivity implements View.OnClickL
     private void decreaseHealth() {
         health--;
         healthTV.setText(String.valueOf(health));
+        if (health <= 0) {
+            cancelTimer();
+            showQuizDialog(GAME_OVER_ID);
+        }
+    }
+
+    private void cancelTimer() {
+        if (timer != null)
+            timer.cancel();
     }
 
     @SuppressLint("NewApi")
@@ -212,16 +219,22 @@ public class QuestionActivity extends AppCompatActivity implements View.OnClickL
     }
 
     private void nextQuestion() {
-        timer.cancel();
+        cancelTimer();
         new Handler().postDelayed(new Runnable() {
             @Override
             public void run() {
                 if (wrongAnswerSelected)
                     decreaseHealth();
-                questionIndex++;
-                resetOptions();
-                setQuestions();
-                timer.start();
+                if (questionIndex < questionList.size() - 1 && health > 0) {
+                    questionIndex++;
+                    resetOptions();
+                    setQuestions();
+                    timer.start();
+                } else if (questionIndex == questionList.size() - 1 && health > 0) {
+                    showQuizDialog(VICTORY_ID);
+                } else if (questionIndex == questionList.size() - 1 && health <= 0) {
+                    showQuizDialog(GAME_OVER_ID);
+                }
             }
         }, 1000);
     }
@@ -235,8 +248,8 @@ public class QuestionActivity extends AppCompatActivity implements View.OnClickL
     }
 
     private void shakingButtonAnimation(Button button, long second) {
-        Animation shaking = new RotateAnimation(-5,
-                5,
+        Animation shaking = new RotateAnimation(-2,
+                2,
                 Animation.RELATIVE_TO_SELF,
                 0.5f,
                 Animation.RELATIVE_TO_SELF,
@@ -258,5 +271,12 @@ public class QuestionActivity extends AppCompatActivity implements View.OnClickL
         healthTV.setText(String.valueOf(this.health));
         startTimer();
         setQuestions();
+        resetOptions();
+    }
+
+    @Override
+    public void onBackPressed() {
+        cancelTimer();
+        super.onBackPressed();
     }
 }
