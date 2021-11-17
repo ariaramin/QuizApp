@@ -3,10 +3,14 @@ package com.example.quizapp;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.annotation.SuppressLint;
+import android.app.ProgressDialog;
 import android.content.res.ColorStateList;
 import android.os.Bundle;
 import android.os.CountDownTimer;
 import android.os.Handler;
+import android.os.Parcelable;
+import android.text.Html;
+import android.util.Log;
 import android.view.View;
 import android.view.animation.AlphaAnimation;
 import android.view.animation.Animation;
@@ -15,12 +19,20 @@ import android.view.animation.RotateAnimation;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.google.android.material.progressindicator.CircularProgressIndicator;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
+import java.util.Set;
+
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 public class QuestionActivity extends AppCompatActivity implements View.OnClickListener, OnRestartListener {
 
@@ -29,7 +41,8 @@ public class QuestionActivity extends AppCompatActivity implements View.OnClickL
     TextView timerCountDown, questionTV, questionIndexTV, healthTV;
     Button optionOneBtn, optionTwoBtn, optionThreeBtn, optionFourBtn;
 
-    int health = 3;
+    ProgressDialog progressDialog;
+    int health = 5;
     List<Question> questionList = new ArrayList<>();
     int questionIndex = 0;
     Question currentQuestion;
@@ -61,35 +74,46 @@ public class QuestionActivity extends AppCompatActivity implements View.OnClickL
         healthTV = findViewById(R.id.healthTextView);
         healthTV.setText(String.valueOf(health));
 
-        String category = getIntent().getStringExtra("category");
-        getQuestions(category);
-        setQuestions();
-        startTimer();
+        int categoryId = getIntent().getIntExtra("categoryId", 0);
+        String categoryTitle = getIntent().getStringExtra("category");
+        getQuestions(categoryId, categoryTitle);
+
+        progressDialog = new ProgressDialog(this);
+        progressDialog.setMessage("Loading...");
+        progressDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
+        progressDialog.show();
     }
 
-    private void getQuestions(String category) {
-        List<Question> data = new ArrayList<>();
-        data.add(new Question(1, "food and drink", "Which food has cholestrol?", "pizza", "burger", "hot dog", "chicken", "chicken"));
-        data.add(new Question(2, "food and drink", "Which food has not cholestrol?", "pizza", "burger", "hot dog", "chicken", "chicken"));
-        data.add(new Question(3, "athletic", "Where does ronaldo play?", "man city", "man unt", "real madrid", "juventos", "man unt"));
-        data.add(new Question(4, "athletic", "Where does messi play?", "man city", "man unt", "real madrid", "psg", "psg"));
-        data.add(new Question(4, "athletic", "Where does messi play?", "man city", "man unt", "real madrid", "psg", "psg"));
-        data.add(new Question(4, "athletic", "Where does messi play?", "man city", "man unt", "real madrid", "psg", "psg"));
-        data.add(new Question(4, "athletic", "Where does messi play?", "man city", "man unt", "real madrid", "psg", "psg"));
-        data.add(new Question(4, "athletic", "Where does messi play?", "man city", "man unt", "real madrid", "psg", "psg"));
+    private void getQuestions(int categoryId, String category) {
 
-        for (Question question :
-                data) {
-            if (question.getCategory().toLowerCase(Locale.ROOT).equals(category.toLowerCase(Locale.ROOT))) {
-                questionList.add(question);
-            }
+        APIEndpoint request = APIClient.getAPIClient().create(APIEndpoint.class);
+        if (categoryId != 0) {
+            request.getQuestions(categoryId, 15).enqueue(new Callback<APIResponse>() {
+                @Override
+                public void onResponse(Call<APIResponse> call, Response<APIResponse> response) {
+                    if (response.isSuccessful() && response.body() != null) {
+                        progressDialog.dismiss();
+                        questionList = response.body().getResults();
+                        setQuestions();
+                        startTimer();
+                    } else {
+                        Toast.makeText(getApplicationContext(), "error", Toast.LENGTH_SHORT).show();
+                    }
+                }
+
+                @Override
+                public void onFailure(Call<APIResponse> call, Throwable t) {
+                    Toast.makeText(getApplicationContext(), "Something went wrong!", Toast.LENGTH_SHORT).show();
+                }
+            });
         }
     }
 
     private void setQuestions() {
         currentQuestion = questionList.get(questionIndex);
-        int index = questionList.indexOf(currentQuestion);
-        questionIndexTV.setText(String.format("%o/%o", index + 1, questionList.size()));
+        List<String> options = new ArrayList<>(currentQuestion.getOptions());
+        Log.i("O", options+"");
+        questionIndexTV.setText(String.format("%d/%d", questionIndex + 1, questionList.size()));
 
         AlphaAnimation fadeOut = new AlphaAnimation(1f, 0f);
         fadeOut.setDuration(200);
@@ -98,9 +122,12 @@ public class QuestionActivity extends AppCompatActivity implements View.OnClickL
 
         questionTV.startAnimation(fadeOut);
         optionOneBtn.startAnimation(fadeOut);
+        optionOneBtn.setVisibility(View.INVISIBLE);
         optionTwoBtn.startAnimation(fadeOut);
+        optionTwoBtn.setVisibility(View.INVISIBLE);
         optionThreeBtn.startAnimation(fadeOut);
         optionFourBtn.startAnimation(fadeOut);
+
         fadeOut.setAnimationListener(new Animation.AnimationListener() {
             @Override
             public void onAnimationStart(Animation animation) {
@@ -109,16 +136,22 @@ public class QuestionActivity extends AppCompatActivity implements View.OnClickL
 
             @Override
             public void onAnimationEnd(Animation animation) {
-                questionTV.setText(currentQuestion.getQuestion());
+                questionTV.setText(Html.fromHtml(currentQuestion.getQuestion()).toString());
                 questionTV.startAnimation(fadeIn);
-                optionOneBtn.setText(currentQuestion.getOptionOne());
-                optionOneBtn.startAnimation(fadeIn);
-                optionTwoBtn.setText(currentQuestion.getOptionTwo());
-                optionTwoBtn.startAnimation(fadeIn);
-                optionThreeBtn.setText(currentQuestion.getOptionThree());
-                optionThreeBtn.startAnimation(fadeIn);
-                optionFourBtn.setText(currentQuestion.getOptionFour());
+                optionFourBtn.setText(Html.fromHtml(options.get(0)).toString());
                 optionFourBtn.startAnimation(fadeIn);
+                optionThreeBtn.setText(Html.fromHtml(options.get(1)).toString());
+                optionThreeBtn.startAnimation(fadeIn);
+                if (options.size() >= 3) {
+                    optionTwoBtn.setVisibility(View.VISIBLE);
+                    optionTwoBtn.setText(Html.fromHtml(options.get(2)).toString());
+                    optionTwoBtn.startAnimation(fadeIn);
+                    if (options.size() >= 4) {
+                        optionOneBtn.setVisibility(View.VISIBLE);
+                        optionOneBtn.setText(Html.fromHtml(options.get(3)).toString());
+                        optionOneBtn.startAnimation(fadeIn);
+                    }
+                }
             }
 
             @Override
@@ -138,10 +171,6 @@ public class QuestionActivity extends AppCompatActivity implements View.OnClickL
                 timerProgressBar.setProgress((int) second);
                 if (second <= 10) {
                     timerProgressBar.setIndicatorColor(getColor(R.color.red_600));
-                    shakingButtonAnimation(optionOneBtn, second);
-                    shakingButtonAnimation(optionTwoBtn, second);
-                    shakingButtonAnimation(optionThreeBtn, second);
-                    shakingButtonAnimation(optionFourBtn, second);
                 } else {
                     timerProgressBar.setIndicatorColor(getColor(R.color.grey_100));
                 }
@@ -153,18 +182,15 @@ public class QuestionActivity extends AppCompatActivity implements View.OnClickL
                 cancelTimer();
                 wrongAnswerSelected = true;
                 timerProgressBar.setIndicatorColor(getColor(R.color.grey_100));
-                showQuizDialog(TIME_OVER_ID);
+                showAppDialog(TIME_OVER_ID);
             }
         };
         timer.start();
     }
 
-    public void showQuizDialog(int status) {
-        Bundle bundle = new Bundle();
-        bundle.putInt("status", status);
-        AppDialog dialog = new AppDialog();
-        dialog.setArguments(bundle);
-        dialog.show(getSupportFragmentManager(), null);
+    private void cancelTimer() {
+        if (timer != null)
+            timer.cancel();
     }
 
     @Override
@@ -189,25 +215,15 @@ public class QuestionActivity extends AppCompatActivity implements View.OnClickL
         }
     }
 
-    private void decreaseHealth() {
-        health--;
-        healthTV.setText(String.valueOf(health));
-        if (health <= 0) {
-            cancelTimer();
-            showQuizDialog(GAME_OVER_ID);
-        }
-    }
-
-    private void cancelTimer() {
-        if (timer != null)
-            timer.cancel();
-    }
-
     @SuppressLint("NewApi")
     private void checkAnswer(Button selectedButton) {
         selectedButton.clearAnimation();
+        optionOneBtn.setOnClickListener(null);
+        optionTwoBtn.setOnClickListener(null);
+        optionThreeBtn.setOnClickListener(null);
+        optionFourBtn.setOnClickListener(null);
         String selectedOption = selectedButton.getText().toString().toLowerCase(Locale.ROOT);
-        if (selectedOption.equals(currentQuestion.getAnswer().toLowerCase(Locale.ROOT))) {
+        if (selectedOption.equals(currentQuestion.getCorrectAnswer().toLowerCase(Locale.ROOT))) {
             selectedButton.setBackgroundTintList(ColorStateList.valueOf(getColor(R.color.green_600)));
             wrongAnswerSelected = false;
             nextQuestion();
@@ -231,9 +247,9 @@ public class QuestionActivity extends AppCompatActivity implements View.OnClickL
                     setQuestions();
                     timer.start();
                 } else if (questionIndex == questionList.size() - 1 && health > 0) {
-                    showQuizDialog(VICTORY_ID);
+                    showAppDialog(VICTORY_ID);
                 } else if (questionIndex == questionList.size() - 1 && health <= 0) {
-                    showQuizDialog(GAME_OVER_ID);
+                    showAppDialog(GAME_OVER_ID);
                 }
             }
         }, 1000);
@@ -242,26 +258,33 @@ public class QuestionActivity extends AppCompatActivity implements View.OnClickL
     @SuppressLint("NewApi")
     private void resetOptions() {
         optionOneBtn.setBackgroundTintList(ColorStateList.valueOf(getColor(R.color.grey_500)));
+        optionOneBtn.setOnClickListener(this::onClick);
+
         optionTwoBtn.setBackgroundTintList(ColorStateList.valueOf(getColor(R.color.grey_500)));
+        optionTwoBtn.setOnClickListener(this::onClick);
+
         optionThreeBtn.setBackgroundTintList(ColorStateList.valueOf(getColor(R.color.grey_500)));
+        optionThreeBtn.setOnClickListener(this::onClick);
+
         optionFourBtn.setBackgroundTintList(ColorStateList.valueOf(getColor(R.color.grey_500)));
+        optionFourBtn.setOnClickListener(this::onClick);
     }
 
-    private void shakingButtonAnimation(Button button, long second) {
-        Animation shaking = new RotateAnimation(-2,
-                2,
-                Animation.RELATIVE_TO_SELF,
-                0.5f,
-                Animation.RELATIVE_TO_SELF,
-                0.5f);
-        shaking.setDuration(100);
-        shaking.setRepeatCount(Animation.INFINITE);
-        shaking.setRepeatMode(Animation.REVERSE);
-        shaking.setInterpolator(new LinearInterpolator());
-        button.startAnimation(shaking);
-        if (second == 0) {
-            button.clearAnimation();
+    private void decreaseHealth() {
+        health--;
+        healthTV.setText(String.valueOf(health));
+        if (health <= 0) {
+            cancelTimer();
+            showAppDialog(GAME_OVER_ID);
         }
+    }
+
+    public void showAppDialog(int status) {
+        Bundle bundle = new Bundle();
+        bundle.putInt("status", status);
+        AppDialog dialog = new AppDialog();
+        dialog.setArguments(bundle);
+        dialog.show(getSupportFragmentManager(), null);
     }
 
     @Override
@@ -269,6 +292,9 @@ public class QuestionActivity extends AppCompatActivity implements View.OnClickL
         questionIndex = index;
         this.health = health;
         healthTV.setText(String.valueOf(this.health));
+        Collections.shuffle(questionList);
+        Set<Question> questionSet = new HashSet<Question>(questionList);
+        questionList = new ArrayList<>(questionSet);
         startTimer();
         setQuestions();
         resetOptions();

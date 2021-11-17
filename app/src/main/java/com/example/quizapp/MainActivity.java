@@ -19,13 +19,13 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        categoryList.add(new Category(BitmapFactory.decodeResource(getResources(), R.drawable.food), "Food and Drink"));
-        categoryList.add(new Category(BitmapFactory.decodeResource(getResources(), R.drawable.music), "Music"));
-        categoryList.add(new Category(BitmapFactory.decodeResource(getResources(), R.drawable.logos), "Logo"));
-        categoryList.add(new Category(BitmapFactory.decodeResource(getResources(), R.drawable.science), "Science"));
-        categoryList.add(new Category(BitmapFactory.decodeResource(getResources(), R.drawable.sport), "Athletic"));
-        categoryList.add(new Category(BitmapFactory.decodeResource(getResources(), R.drawable.art), "Art"));
-        categoryList.add(new Category(BitmapFactory.decodeResource(getResources(), R.drawable.tech), "Technology"));
+        categoryList.add(new Category(12, BitmapFactory.decodeResource(getResources(), R.drawable.music), "Music"));
+        categoryList.add(new Category(21, BitmapFactory.decodeResource(getResources(), R.drawable.sport), "Sports"));
+        categoryList.add(new Category(18, BitmapFactory.decodeResource(getResources(), R.drawable.tech), "Technology"));
+        categoryList.add(new Category(15, BitmapFactory.decodeResource(getResources(), R.drawable.game), "Video Games"));
+        categoryList.add(new Category(9, BitmapFactory.decodeResource(getResources(), R.drawable.science), "General Knowledge"));
+        categoryList.add(new Category(25, BitmapFactory.decodeResource(getResources(), R.drawable.art), "Art"));
+        categoryList.add(new Category(17, BitmapFactory.decodeResource(getResources(), R.drawable.nature), "Nature"));
 
         RecyclerView categoryRecyclerView = findViewById(R.id.categoryRecyclerView);
         CategoryAdapter categoryAdapter = new CategoryAdapter(this, categoryList);

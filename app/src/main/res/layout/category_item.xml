@@ -47,7 +47,7 @@
                 android:id="@+id/categoryTitleTextView"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Food"
+                android:text="Music"
                 android:textColor="@color/white"
                 android:textSize="26sp"
                 android:textStyle="bold"
@@ -68,6 +68,6 @@
         app:layout_constraintDimensionRatio="w,1:1"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="@+id/cardView"
-        tools:srcCompat="@drawable/food" />
+        tools:srcCompat="@drawable/music" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

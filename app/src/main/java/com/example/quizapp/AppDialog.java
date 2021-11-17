@@ -63,7 +63,7 @@ public class AppDialog extends DialogFragment {
         restartBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                callback.OnRestart(3, 0);
+                callback.OnRestart(5, 0);
                 dismiss();
             }
         });

@@ -1,5 +1,6 @@
 package com.example.quizapp;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.drawable.Drawable;
@@ -62,17 +63,17 @@ public class CategoryAdapter extends RecyclerView.Adapter<CategoryAdapter.Catego
             title = itemView.findViewById(R.id.categoryTitleTextView);
         }
 
+        @SuppressLint("NewApi")
         public void bindData(Category category, int position) {
             List<Drawable> backgrounds = new ArrayList<>();
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                backgrounds.add(context.getDrawable(R.drawable.gradient_1));
-                backgrounds.add(context.getDrawable(R.drawable.gradient_2));
-                backgrounds.add(context.getDrawable(R.drawable.gradient_3));
-                backgrounds.add(context.getDrawable(R.drawable.gradient_4));
-                backgrounds.add(context.getDrawable(R.drawable.gradient_5));
-                backgrounds.add(context.getDrawable(R.drawable.gradient_6));
-                backgrounds.add(context.getDrawable(R.drawable.gradient_7));
-            }
+            backgrounds.add(context.getDrawable(R.drawable.gradient_1));
+            backgrounds.add(context.getDrawable(R.drawable.gradient_2));
+            backgrounds.add(context.getDrawable(R.drawable.gradient_7));
+            backgrounds.add(context.getDrawable(R.drawable.gradient_4));
+            backgrounds.add(context.getDrawable(R.drawable.gradient_3));
+            backgrounds.add(context.getDrawable(R.drawable.gradient_5));
+            backgrounds.add(context.getDrawable(R.drawable.gradient_6));
+
             constraintLayout.setBackground(backgrounds.get(position));
             Glide.with(context)
                     .load(category.getImage())
@@ -83,6 +84,7 @@ public class CategoryAdapter extends RecyclerView.Adapter<CategoryAdapter.Catego
                 @Override
                 public void onClick(View v) {
                     Intent intent = new Intent(context, QuestionActivity.class);
+                    intent.putExtra("categoryId", category.getId());
                     intent.putExtra("category", category.getTitle());
                     context.startActivity(intent);
                 }

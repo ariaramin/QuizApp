@@ -91,10 +91,10 @@
                 app:cardBackgroundColor="@color/yellow_300"
                 app:cardCornerRadius="18dp"
                 app:cardElevation="4dp"
-                app:contentPaddingBottom="82dp"
-                app:contentPaddingLeft="12dp"
-                app:contentPaddingRight="12dp"
-                app:contentPaddingTop="82dp"
+                app:contentPaddingBottom="62dp"
+                app:contentPaddingLeft="8dp"
+                app:contentPaddingRight="8dp"
+                app:contentPaddingTop="62dp"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
@@ -107,7 +107,8 @@
                     android:layout_gravity="center"
                     android:textAlignment="center"
                     android:textColor="@color/black"
-                    android:textSize="24sp" />
+                    android:textSize="24sp"
+                    app:lineHeight="35dp" />
             </androidx.cardview.widget.CardView>
 
             <androidx.cardview.widget.CardView
@@ -139,12 +140,11 @@
             android:layout_width="match_parent"
             android:layout_height="250dp"
             android:layout_gravity="bottom"
-            android:layout_marginBottom="8dp"
+            android:layout_marginBottom="16dp"
             app:columnCount="2"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:rowCount="4">
+            app:layout_constraintStart_toStartOf="parent">
 
             <Button
                 android:id="@+id/optionOneButton"
@@ -155,6 +155,7 @@
                 android:layout_marginEnd="8dp"
                 android:layout_marginBottom="16dp"
                 android:background="@drawable/button_background"
+                android:maxWidth="10dp"
                 android:textAllCaps="false"
                 android:textSize="18sp"
                 app:backgroundTint="@color/grey_500"
@@ -170,6 +171,7 @@
                 android:layout_marginEnd="8dp"
                 android:layout_marginBottom="16dp"
                 android:background="@drawable/button_background"
+                android:maxWidth="10dp"
                 android:textAllCaps="false"
                 android:textSize="18sp"
                 app:backgroundTint="@color/grey_500"
@@ -184,6 +186,7 @@
                 android:layout_marginEnd="8dp"
                 android:layout_marginBottom="16dp"
                 android:background="@drawable/button_background"
+                android:maxWidth="10dp"
                 android:textAllCaps="false"
                 android:textSize="18sp"
                 app:backgroundTint="@color/grey_500"
@@ -198,6 +201,7 @@
                 android:layout_marginEnd="8dp"
                 android:layout_marginBottom="16dp"
                 android:background="@drawable/button_background"
+                android:maxWidth="10dp"
                 android:textAllCaps="false"
                 android:textSize="18sp"
                 app:backgroundTint="@color/grey_500"
